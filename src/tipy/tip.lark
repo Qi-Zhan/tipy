@@ -1,0 +1,89 @@
+start: function*
+
+function: id "(" name_list ")" funblock
+funblock: "{" vardecl* statement* return "}"
+
+vardecl: "var" name_list ";"
+?statement: if | assign | output | block | error | while
+return : "return" expr ";"
+
+
+if: "if" "(" expr ")" statement ("else" statement)?
+assign: assignexpr "=" expr ";"
+output: "output" expr ";"
+error: "error" expr ";"
+while: "while" "(" expr ")" statement
+
+block: "{" statement* "}"
+
+?assignexpr: id
+    | directfieldwrite
+    | indirectfieldwrite
+    | derefwrite
+
+directfieldwrite: id "." id
+indirectfieldwrite: "(" "*" expr ")" "." id
+derefwrite: "*" expr
+
+?expr: expr "==" oper -> eq
+    | expr "!=" oper -> ne
+    | expr "<" oper -> lt
+    | expr ">" oper -> gt
+    | expr "<=" oper -> le
+    | expr ">=" oper -> ge
+    | oper
+
+?oper: oper "+" term -> add
+    | oper "-" term -> sub
+    | term
+
+?term: term "*" factor -> mul
+    | term "/" factor -> div
+    | access
+    | factor
+
+?access: id ("." id)+ -> access
+    | deref ("." id)+ -> access
+    | "(" expr ")" ("." id)+ -> access
+
+?factor: "-" atom -> neg
+    | atom
+
+?atom: id 
+    | STRING -> string
+    | DEC_NUMBER -> number
+    | "(" expr ")" -> parens
+    | "input" -> input
+    | record
+    | funapp
+    | pointer
+
+?funapp: id "(" expr_list ")"
+    | "(" expr ")" "(" expr_list ")"
+
+?pointer: deref
+    | ref
+    | "null" -> null
+    | "alloc" expr  -> alloc
+
+record: "{" field_list "}"
+ref: "&" id -> reference
+deref: "*" atom -> deref
+
+name_list: id ("," id)* | 
+expr_list: expr ("," expr)* |
+field_list: field ("," field)* |
+field: id ":" expr
+
+
+id: NAME
+
+COMMENT: "//" /[^\n]*/ NEWLINE
+NEWLINE: "\n"
+MULTILINE_COMMENT: /\/\*(\*(?!\/)|[^*])*\*\//
+
+%import python (NAME, STRING, DEC_NUMBER)
+%import common.WS
+%ignore WS
+%ignore COMMENT
+%ignore MULTILINE_COMMENT
