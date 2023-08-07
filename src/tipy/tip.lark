@@ -57,6 +57,7 @@ derefwrite: "*" expr
     | record
     | funapp
     | pointer
+    | "null" -> null
 
 ?funapp: id "(" expr_list ")"
     | "(" expr ")" "(" expr_list ")"

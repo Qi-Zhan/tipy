@@ -7,6 +7,7 @@ This is python implementation for [TIP](https://github.com/cs-au-dk/TIP), which 
 ### Install
 
 ```bash
+pip install lark
 pip install -e .
 ```
 

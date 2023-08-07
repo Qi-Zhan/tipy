@@ -9,14 +9,12 @@ import sys
 from pprint import pprint
 
 from tipy.parser import parse, parse_file
-from tipy.ast import Program
-
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        prog: Program = parse_file(sys.argv[1])
+        prog = parse_file(sys.argv[1])
     else:
-        prog: Program = parse("""
+        prog = parse("""
             // This is a comment
             /* This is a mult
             iline comment */
@@ -42,4 +40,5 @@ if __name__ == '__main__':
             }
         """)
     pprint(prog.functions)
+    # PrettyPrinter.print(prog)
     prog.dump()
