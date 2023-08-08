@@ -1,4 +1,4 @@
-from tipy.ast import Access, Parameters, Program, Record
+from tipy.ast import Access, Assign, Parameters, Program, Record
 from .ast import *
 from .visitor import AstVisitor
 from .util import SymbolError
@@ -27,7 +27,7 @@ class SymbolContext:
     >>> st.exit_scope()
     >>> assert st.get('a') == 'int'
     """
-    symbols: dict[Id, list[Id]]
+    symbols: dict[str, list[Id]]
 
     def __init__(self):
         self.symbols = {}
@@ -73,13 +73,12 @@ class SymbolTable(AstVisitor):
         ast.accept(st)
         for name, id in st.symbols.items():
             if id is None:
-                raise SymbolError(f'Undefined variable {name} with line {name.token.line}')
-            # print(
-            #     f'{name.value} in line{name.token.line} -> {id.value} in line {id.token.line}')
+                raise SymbolError(
+                    f'Undefined variable {name} with line {name.token.line}')
         return st
 
     def get(self, name: Id) -> Id:
-        return self[name]
+        return self.symbols[name]
 
     def visit_vardecl(self, node: Vardecl):
         for id in node.ids:
@@ -105,6 +104,7 @@ class SymbolTable(AstVisitor):
             func.accept(self)
 
     def visit_function(self, node: Function):
+        node.name.accept(self)
         node.parameters.accept(self)
         node.body.accept(self)
 

@@ -25,7 +25,7 @@ class PointerType(Type):
     type_: Type
 
     def __repr__(self) -> str:
-        return f'{self.type_}*'
+        return f'↑{self.type_}'
 
 
 @dataclass
@@ -37,12 +37,22 @@ class FunctionType(Type):
         return f'({", ".join(map(str, self.params))}) -> {self.return_type}'
 
 
+typevar = 0
+
+
 @dataclass
 class TypeVar(Type):
     id: int
 
     def __repr__(self) -> str:
         return f'${self.id}'
+
+    @classmethod
+    def new(cls):
+        global typevar
+        typevar += 1
+        return cls(typevar)
+
 
 @dataclass
 class RecursionType(Type):

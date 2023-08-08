@@ -20,15 +20,15 @@ class TestSymbol(TipyTest):
         """
         ast = parse(prog)
         st = SymbolTable.build(ast)
-        self.assertEqual(len(st.symbols), 2)
+        self.assertEqual(len(st.symbols), 3)
 
     errors = ['err_notdecl.tip', 'err_decl_use.tip',
             'parsing.tip', 'err_notlocal.tip']
 
     def test_all_file(self):
+        print('symbol test: all')
         for file in self.file_lists:
             if file.endswith(".tip"):
-                print('symbol test:', file)
                 ast = parse_file("tip_examples/" + file)
                 if file not in self.errors:
                     SymbolTable.build(ast)

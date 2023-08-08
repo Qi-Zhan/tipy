@@ -11,9 +11,9 @@ class TestParser(TipyTest):
     file_lists = os.listdir("tip_examples")
 
     def test_parser(self):
+        print('parser test: all')
         for file in self.file_lists:
             if file.endswith(".tip"):
-                print("Parsing " + file)
                 prog = parse_file("tip_examples/" + file)
                 buffer = io.StringIO()
                 sys.stdout = buffer

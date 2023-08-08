@@ -25,7 +25,7 @@ class Operator(enum.Enum):
     DEREF = '*'
 
 
-class Type(enum.Enum):
+class AstType(enum.Enum):
     INT = 'int'
     BOOL = 'bool'
     STRING = 'string'
@@ -39,15 +39,15 @@ class Statement(_Ast):
             'you should implement this method in subclass')
 
 
-class _Expr(_Ast):
+class Expr(_Ast):
     def accept(self, _visitor):
         raise NotImplementedError(
             'you should implement this method in subclass')
 
 
 @dataclass
-class Const(_Expr):
-    type_: Type
+class Const(Expr):
+    type_: AstType
     value: str | int | None
 
     def accept(self, visitor):
@@ -59,7 +59,7 @@ class Const(_Expr):
         print(' ' * indent, self.value, end=' ')
 
 
-class Id(_Expr):
+class Id(Expr):
     __match_args__ = tuple(['value'])
 
     token: Token
@@ -84,10 +84,10 @@ class Id(_Expr):
 
 
 @dataclass
-class BinaryExpr(_Expr):
-    left: _Expr
+class BinaryExpr(Expr):
+    left: Expr
     op: Operator
-    right: _Expr
+    right: Expr
 
     def accept(self, visitor):
         visitor.visit_binary_expr(self)
@@ -99,9 +99,9 @@ class BinaryExpr(_Expr):
 
 
 @dataclass
-class UnaryExpr(_Expr):
+class UnaryExpr(Expr):
     op: Operator
-    expr: _Expr
+    expr: Expr
 
     def accept(self, visitor):
         visitor.visit_unary_expr(self)
@@ -114,7 +114,7 @@ class UnaryExpr(_Expr):
 
 
 @dataclass
-class Reference(_Expr):
+class Reference(Expr):
     name: Id
 
     def accept(self, visitor):
@@ -126,8 +126,8 @@ class Reference(_Expr):
 
 
 @dataclass
-class Deref(_Expr):
-    expr: _Expr
+class Deref(Expr):
+    expr: Expr
 
     def accept(self, visitor):
         visitor.visit_deref(self)
@@ -138,8 +138,8 @@ class Deref(_Expr):
 
 
 @dataclass
-class Alloc(_Expr):
-    expr: _Expr
+class Alloc(Expr):
+    expr: Expr
 
     def accept(self, visitor):
         visitor.visit_alloc(self)
@@ -150,7 +150,7 @@ class Alloc(_Expr):
 
 
 @dataclass
-class DirectFieldWrite(_Expr):
+class DirectFieldWrite(Expr):
     name: Id
     field: Id
 
@@ -166,8 +166,8 @@ class DirectFieldWrite(_Expr):
 
 
 @dataclass
-class IndirectFieldWrite(_Expr):
-    expr: _Expr
+class IndirectFieldWrite(Expr):
+    expr: Expr
     field: Id
 
     def accept(self, visitor):
@@ -182,8 +182,8 @@ class IndirectFieldWrite(_Expr):
 
 
 @dataclass
-class DerefWrite(_Expr):
-    expr: _Expr
+class DerefWrite(Expr):
+    expr: Expr
 
     def accept(self, visitor):
         visitor.visit_deref_write(self)
@@ -194,8 +194,8 @@ class DerefWrite(_Expr):
 
 
 @dataclass
-class Record(_Expr):
-    fields: list[(Id, _Expr)]
+class Record(Expr):
+    fields: list[(Id, Expr)]
 
     def accept(self, visitor):
         visitor.visit_record(self)
@@ -211,8 +211,8 @@ class Record(_Expr):
 
 
 @dataclass
-class Access(_Expr):
-    name: Id | Deref | _Expr
+class Access(Expr):
+    name: Id | Deref | Expr
     fields: list[Id]
 
     def accept(self, visitor):
@@ -231,7 +231,7 @@ class Access(_Expr):
                 raise TypeError('Invalid type for field', type(ids))
 
     def dump(self, indent=0):
-        assert (type(self.name) in (Id, Deref, _Expr)
+        assert (type(self.name) in (Id, Deref, Expr)
                 ), f'Access: Invalid type {type(self.name)}'
         assert (type(self.fields) ==
                 list), f'Access: Invalid type {type(self.fields)}'
@@ -290,7 +290,7 @@ class Vardecl(Statement):
 
 @dataclass
 class Return(Statement):
-    expr: _Expr
+    expr: Expr
 
     def accept(self, visitor):
         visitor.visit_return(self)
@@ -353,7 +353,7 @@ class Function(_Ast):
 
 @dataclass
 class If(Statement):
-    cond: _Expr
+    cond: Expr
     then: Block
     else_: Block | None
 
@@ -377,7 +377,7 @@ class If(Statement):
 
 @dataclass
 class While(Statement):
-    cond: _Expr
+    cond: Expr
     then: Block
 
     def accept(self, visitor):
@@ -392,7 +392,7 @@ class While(Statement):
 @dataclass
 class Assign(Statement):
     name: Id | DirectFieldWrite | IndirectFieldWrite | DerefWrite
-    expr: _Expr
+    expr: Expr
 
     def accept(self, visitor):
         visitor.visit_assign(self)
@@ -422,18 +422,18 @@ class Assign(Statement):
 
 
 @dataclass
-class Input(Statement):
+class Input(Expr):
 
     def accept(self, visitor):
         visitor.visit_input(self)
 
     def dump(self, indent=0):
-        print(' ' * indent, 'input;')
+        print(' ' * indent, 'input', end=' ')
 
 
 @dataclass
 class Output(Statement):
-    expr: _Expr
+    expr: Expr
 
     def accept(self, visitor):
         visitor.visit_output(self)
@@ -445,9 +445,9 @@ class Output(Statement):
 
 
 @dataclass
-class Call(_Expr):
-    name: Id | _Expr
-    args: list[_Expr]
+class Call(Expr):
+    name: Expr
+    args: list[Expr]
 
     def accept(self, visitor):
         visitor.visit_call(self)
@@ -463,7 +463,7 @@ class Call(_Expr):
 
 @dataclass
 class Error(Statement):
-    value: _Expr
+    value: Expr
 
     def accept(self, visitor):
         visitor.visit_error(self)

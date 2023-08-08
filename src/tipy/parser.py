@@ -14,15 +14,15 @@ class ToAst(Transformer):
 
     @v_args(inline=True)
     def string(self, s: str):
-        return Const(Type.STRING, s[1:-1])
+        return Const(AstType.STRING, s[1:-1])
 
     @v_args(inline=True)
     def null(self):
-        return Const(Type.NULL, None)
+        return Const(AstType.NULL, None)
 
     @v_args(inline=True)
     def number(self, n: str):
-        return Const(Type.INT, int(n))
+        return Const(AstType.INT, int(n))
 
     def name_list(self, x: list):
         return Parameters(x)
