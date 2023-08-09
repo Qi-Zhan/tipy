@@ -38,7 +38,7 @@ class Statement(_Ast):
         raise NotImplementedError(
             'you should implement this method in subclass')
 
-
+@dataclass
 class Expr(_Ast):
     def accept(self, _visitor):
         raise NotImplementedError(
@@ -378,7 +378,7 @@ class If(Statement):
 @dataclass
 class While(Statement):
     cond: Expr
-    then: Block
+    body: Block
 
     def accept(self, visitor):
         visitor.visit_while(self)
@@ -386,7 +386,7 @@ class While(Statement):
     def dump(self, indent=0):
         print(' ' * indent, 'while', end=' ')
         self.cond.dump()
-        self.then.dump(indent + 2)
+        self.body.dump(indent + 2)
 
 
 @dataclass

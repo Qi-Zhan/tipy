@@ -8,20 +8,22 @@ Usage:
 import sys
 from tipy.parser import parse, parse_file
 from tipy.analysis import TypeAnalysis
+from tipy.ast import Id
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         prog = parse_file(sys.argv[1])
     else:
         prog = parse(
-        """short() {
-        var x, y, z;
-        x = input;
-        y = alloc x;
-        *y = x;
-        z = *y;
-        return z;
+            """main() {
+            var p;
+            p = alloc null;
+            *p = p;
+            return 0;
         }
         """)
     prog.dump()
-    TypeAnalysis.run(prog)
+    result = TypeAnalysis.run(prog)
+    for expr in result.map2expr.values():
+        if isinstance(expr, Id):
+            print(f"{expr} line:{expr.token.line} -> {result.get_type(expr)}")

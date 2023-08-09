@@ -59,7 +59,7 @@ class AstVisitor(Visitor):
 
     def visit_while(self, node: While):
         node.cond.accept(self)
-        node.then.accept(self)
+        node.body.accept(self)
 
     def visit_reference(self, node: Reference):
         node.name.accept(self)

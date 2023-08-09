@@ -1,4 +1,3 @@
-import os
 import unittest
 
 from tipy.symbol import SymbolTable
@@ -9,7 +8,6 @@ from .util import TipyTest
 
 
 class TestSymbol(TipyTest):
-    file_lists = os.listdir("tip_examples")
 
     def test_simple(self):
         prog = """main(a) {
@@ -23,7 +21,7 @@ class TestSymbol(TipyTest):
         self.assertEqual(len(st.symbols), 3)
 
     errors = ['err_notdecl.tip', 'err_decl_use.tip',
-            'parsing.tip', 'err_notlocal.tip']
+              'parsing.tip', 'err_notlocal.tip']
 
     def test_all_file(self):
         print('symbol test: all')

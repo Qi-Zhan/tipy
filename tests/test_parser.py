@@ -1,5 +1,4 @@
 import unittest
-import os
 import sys
 import io
 
@@ -8,7 +7,6 @@ from .util import TipyTest
 
 
 class TestParser(TipyTest):
-    file_lists = os.listdir("tip_examples")
 
     def test_parser(self):
         print('parser test: all')

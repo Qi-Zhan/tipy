@@ -3,7 +3,15 @@ from dataclasses import dataclass
 
 @dataclass
 class Type:
-    pass
+    def find_parent(self) -> 'Type':
+        """
+        find the representative of the set that this type belongs to
+        - it should handle the case circular reference
+        - μ terms are only produced for presenting solutions to constraints
+        """
+        if self.parent != self:
+            self.parent = self.parent.find_parent()
+        return self.parent
 
 
 @dataclass
@@ -25,6 +33,8 @@ class PointerType(Type):
     type_: Type
 
     def __repr__(self) -> str:
+        assert isinstance(
+            self.type_, Type), f'type_ must be an instance of Type, got {self.type_}'
         return f'↑{self.type_}'
 
 
@@ -34,6 +44,9 @@ class FunctionType(Type):
     return_type: Type
 
     def __repr__(self) -> str:
+        for param in self.params:
+            assert isinstance(param, Type)
+        assert isinstance(self.return_type, Type)
         return f'({", ".join(map(str, self.params))}) -> {self.return_type}'
 
 
@@ -60,4 +73,6 @@ class RecursionType(Type):
     type_: Type
 
     def __repr__(self) -> str:
-        return f'{self.var} = {self.type_}'
+        assert isinstance(self.var, TypeVar)
+        assert isinstance(self.type_, Type)
+        return f'μ{self.var}.{self.type_}'
