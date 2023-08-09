@@ -77,10 +77,10 @@ class Id(Expr):
         print(' ' * indent, self.value, end=' ')
 
     def __hash__(self) -> int:
-        return hash(self.value)
+        return id(self)
 
     def __str__(self) -> str:
-        return self.value
+        return f"{self.value}{self.token.line}"
 
 
 @dataclass

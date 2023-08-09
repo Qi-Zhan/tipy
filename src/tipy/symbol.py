@@ -100,17 +100,13 @@ class SymbolTable(AstVisitor):
     def visit_program(self, node: Program):
         for func in node.functions:
             self.context.push(func.name.value, func.name)
-        for func in node.functions:
-            func.accept(self)
+        super().visit_program(node)
 
     def visit_function(self, node: Function):
+        self.context.enter_scope()
         node.name.accept(self)
         node.parameters.accept(self)
         node.body.accept(self)
-
-    def visit_funblock(self, node: FunBlock):
-        self.context.enter_scope()
-        super().visit_funblock(node)
         self.context.exit_scope()
 
 

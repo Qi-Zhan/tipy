@@ -37,15 +37,6 @@ class TypeConstraitCollection(AstVisitor):
     def get_type(self, expr: Expr) -> Type:
 
         def detect_cyclic_reference(t: Type) -> bool:
-            cycle = []
-            while t.parent != t:
-                print(f"t: {t}, t.parent: {t.parent}")
-                cycle.append(t)
-                t = t.parent
-                if t in cycle:
-                    print('detect cycle', cycle)
-                    breakpoint()
-                    return True
             return False
 
         def find(t: Type) -> Type:
@@ -53,8 +44,6 @@ class TypeConstraitCollection(AstVisitor):
             find the representative of the set that this type belongs to
             - it should handle the case circular reference
             """
-            if detect_cyclic_reference(t):
-                breakpoint()
             t = t.find_parent()
             match t:
                 case PointerType(inner):
@@ -67,15 +56,6 @@ class TypeConstraitCollection(AstVisitor):
                     return t
         type_ = find(self.map2type.get(id(expr)))
         return type_
-        match type_:
-            case PointerType(inner):
-                return PointerType(inner.find_parent())
-            case FunctionType(params, return_type):
-                params = [param.find_parent() for param in params]
-                return_type = return_type.find_parent()
-                return FunctionType(params, return_type)
-            case _:
-                return type_
 
     # @typecheck
     def _get_typevar(self, expr: Expr | Function) -> TypeVar:
@@ -154,7 +134,11 @@ class TypeConstraitCollection(AstVisitor):
         tv_return = self._get_typevar(returnstmt.expr)
         type2 = FunctionType(tv_params, tv_return)
         self._add(Equal(tv_func, type2))
-        node.parameters.accept(self)
+
+        # main function returns int
+        if node.name.value == 'main':
+            self._add(Equal(tv_return, IntType()))
+
         node.body.accept(self)
 
     def visit_vardecl(self, node: Vardecl):
@@ -180,14 +164,14 @@ class TypeConstraitCollection(AstVisitor):
         tv_expr = self._get_typevar(node.expr)
         self._add(Equal(tv, PointerType(tv_expr)))
         node.expr.accept(self)
-
+    
     def visit_reference(self, node: Reference):
         """
         &E: [[&E]] = ↑[[E]]
         """
         tv = self._get_typevar(node)
         tv_name = self._get_typevar(node.name)
-        self.add(Equal(tv, PointerType(tv_name)))
+        self._add(Equal(tv, PointerType(tv_name)))
         node.name.accept(self)
 
     def visit_deref(self, node: Deref):

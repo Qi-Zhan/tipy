@@ -79,28 +79,27 @@ class TestType(TipyTest):
     def test_hard(self):
         prog = """
         foo (p,x) {
-            
+            var f, q;
+            if (*q == 0) {
+                f = 1;
+            } else {
+                q  = alloc 0;
+                *q = (*p) - 1;
+                f = (*p)*(x(q, x));
+            }
+            return f;
+        }
+
+        main() {
+            var n;
+            n = input;
+            return foo(&n, foo);
         }
         """
-
-    symbol_errors = ['err_notdecl.tip', 'err_decl_use.tip',
-                     'parsing.tip', 'err_notlocal.tip']
-
-    errors = []
-
-    # def test_all_file(self):
-    #     for file in self.file_lists:
-    #         if file.endswith(".tip"):
-    #             # ignore symbol table error
-    #             if file in self.symbol_errors:
-    #                 continue
-    #             print(file)
-    #             ast = parse_file("tip_examples/" + file)
-    #             if file not in self.errors:
-    #                 pass
-    #                 # TypeAnalysis.run(ast)
-    #             else:
-    #                 self.assertException(TypeAnalysis.run, TypeError, ast)
+        prog = parse(prog)
+        result = TypeAnalysis.run(prog)
+        for expr in result.map2expr.values():
+            pass
 
 
 if __name__ == '__main__':

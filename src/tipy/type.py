@@ -6,8 +6,6 @@ class Type:
     def find_parent(self) -> 'Type':
         """
         find the representative of the set that this type belongs to
-        - it should handle the case circular reference
-        - μ terms are only produced for presenting solutions to constraints
         """
         if self.parent != self:
             self.parent = self.parent.find_parent()

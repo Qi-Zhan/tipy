@@ -80,7 +80,7 @@ class UnionFindSolver(Solver):
     def solve(cls, constraints):
         # initialize the union-find data structure
         for constraint in constraints:
-            print(constraint)
+            # print(constraint)
             make_set(constraint.left)
             make_set(constraint.right)
         # unify all the constraints
