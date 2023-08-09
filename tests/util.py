@@ -5,9 +5,9 @@ import os
 class TipyTest(unittest.TestCase):
     file_lists = os.listdir("tip_examples")
 
-    def assertException(self, func, exception, *args):
+    def assertException(self, func, exception, *args, **kwargs):
         try:
-            func(*args)
+            func(*args, **kwargs)
         except exception:
             pass
         else:

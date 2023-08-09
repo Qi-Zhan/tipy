@@ -23,14 +23,19 @@ def typecheck(func: callable):
     def wrapper(*args, **kwargs):
         # get the type hints
         hints = func.__annotations__
-        print(hints)
-        print(args)
+        argcount = func.__code__.co_argcount
+        params = func.__code__.co_varnames[:argcount]
         # check if the arguments are of the correct type
-        for i, arg in enumerate(args):
-            print(arg)
-            if arg is not None and not isinstance(arg, hints[list(hints)[i]]):
+        for arg_name in hints.keys():
+            arg_hint = hints[arg_name]
+            index = params.index(arg_name)
+            # skip the arguments that are not type hinted
+            if index < 0 or index >= len(args):
+                continue
+            arg = args[params.index(arg_name)]
+            if arg is not None and not isinstance(arg, arg_hint):
                 raise TypeError(
-                    f'Expected {hints[list(hints)[i]]}, got {type(arg)}')
+                    f'Expected {arg_hint}, got {type(arg)}')
         for key, value in kwargs.items():
             if value is not None and not isinstance(value, hints[key]):
                 raise TypeError(

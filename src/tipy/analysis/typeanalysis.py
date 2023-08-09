@@ -29,10 +29,18 @@ class TypeConstraitCollection(AstVisitor):
         return tcc
 
     def __init__(self, source: Program):
-        self.constraints = []
-        self.st = SymbolTable.build(source)
-        self.map2type = dict()  # map from id to type
+        self._constraints = []
+        self._st = SymbolTable.build(source)
+        self._map2type = dict()  # map from id to type
         self.map2expr = dict()  # map from id to expr
+        self.map2type = dict()  # final map from id to type
+    
+    def close(self):
+        """
+        close the type constraint term
+        - use recursive type to handle the case of circular reference
+        """
+        raise NotImplementedError
 
     def get_type(self, expr: Expr) -> Type:
 
@@ -54,7 +62,7 @@ class TypeConstraitCollection(AstVisitor):
                     return FunctionType(params, return_type)
                 case _:
                     return t
-        type_ = find(self.map2type.get(id(expr)))
+        type_ = find(self._map2type.get(id(expr)))
         return type_
 
     # @typecheck
@@ -67,15 +75,15 @@ class TypeConstraitCollection(AstVisitor):
         elif not isinstance(expr, Expr):
             assert False, f'expr must be an instance of Expr, got {expr}'
         expr_id = id(expr)
-        if expr_id in self.map2type:
-            return self.map2type[expr_id]
+        if expr_id in self._map2type:
+            return self._map2type[expr_id]
         typevar = TypeVar.new()
-        self.map2type[expr_id] = typevar
+        self._map2type[expr_id] = typevar
         self.map2expr[typevar.id] = expr
         return typevar
 
     def _add(self, constraint: Constraint):
-        self.constraints.append(constraint)
+        self._constraints.append(constraint)
 
     def visit_input(self, node: Input):
         tv = self._get_typevar(node)
@@ -185,7 +193,7 @@ class TypeConstraitCollection(AstVisitor):
 
     def visit_id(self, node: Id):
         tv = self._get_typevar(node)
-        real_node = self.st.get(node)
+        real_node = self._st.get(node)
         tv_node = self._get_typevar(real_node)
         self._add(Equal(tv, tv_node))
 
@@ -210,6 +218,7 @@ class TypeAnalysis(Analysis):
     @classmethod
     def run(cls, source: Program):
         tcc = TypeConstraitCollection.collect(source)
-        constraints = tcc.constraints
+        constraints = tcc._constraints
         UnionFindSolver.solve(constraints)
+        tcc.close()
         return tcc
