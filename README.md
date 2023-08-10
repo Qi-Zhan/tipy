@@ -21,7 +21,7 @@ See `examples/` for all analysis we implemented of TIP program.
 
 * `parse.py` parse TIP program into AST
 * `typeanalysis.py` type check and infer types of TIP program from AST
-* `cfg.py` generate control flow graph from AST
+* `cfg.py` generate control flow graph from AST, you can use `dot` to visualize it
 
 ## Test
 

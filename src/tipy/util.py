@@ -42,3 +42,16 @@ def typecheck(func: callable):
                     f'Expected {hints[key]}, got {type(value)}')
         return func(*args, **kwargs)
     return wrapper
+
+def get_output(func, *args, **kwargs) -> str:
+    """
+    Run the function and return the output
+    """
+    import io
+    import sys
+    old_stdout = sys.stdout
+    sys.stdout = mystdout = io.StringIO()
+    func(*args, **kwargs)
+    sys.stdout = old_stdout
+    return mystdout.getvalue()
+                
