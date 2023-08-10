@@ -11,6 +11,9 @@ class Type:
             self.parent = self.parent.find_parent()
         return self.parent
 
+    def contain(self, t: 'Type') -> bool:
+        return False
+
 
 @dataclass
 class IntType(Type):
@@ -30,6 +33,9 @@ class StringType(Type):
 class PointerType(Type):
     type_: Type
 
+    def contain(self, t: Type) -> bool:
+        return self.type_.contain(t)
+
     def __repr__(self) -> str:
         assert isinstance(
             self.type_, Type), f'type_ must be an instance of Type, got {self.type_}'
@@ -40,6 +46,9 @@ class PointerType(Type):
 class FunctionType(Type):
     params: list[Type]
     return_type: Type
+
+    def contain(self, t: Type) -> bool:
+        return any(param.contain(t) for param in self.params) or self.return_type.contain(t)
 
     def __repr__(self) -> str:
         for param in self.params:
@@ -55,14 +64,14 @@ typevar = 0
 class TypeVar(Type):
     id: int
 
-    def __repr__(self) -> str:
-        return f'${self.id}'
-
     @classmethod
     def new(cls):
         global typevar
         typevar += 1
         return cls(typevar)
+
+    def __repr__(self) -> str:
+        return f'${self.id}'
 
 
 @dataclass

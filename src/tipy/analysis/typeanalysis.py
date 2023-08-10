@@ -6,7 +6,6 @@ from ..symbol import SymbolTable
 from ..visitor import AstVisitor
 from ..solver import UnionFindSolver
 from ..type import *
-from ..util import typecheck
 
 
 @dataclass
@@ -16,6 +15,15 @@ class Equal(Constraint):
     """
     left: Type
     right: Type
+
+
+class TypeResult:
+    def __init__(self, map2expr, map2type):
+        self.map2type = map2type
+        self.map2expr = map2expr
+
+    def get_type(self, expr: Expr) -> Type:
+        return self.map2type[id(expr)]
 
 
 class TypeConstraitCollection(AstVisitor):
@@ -29,25 +37,18 @@ class TypeConstraitCollection(AstVisitor):
         return tcc
 
     def __init__(self, source: Program):
-        self._constraints = []
+        self.constraints = []
         self._st = SymbolTable.build(source)
         self._map2type = dict()  # map from id to type
         self.map2expr = dict()  # map from id to expr
         self.map2type = dict()  # final map from id to type
-    
-    def close(self):
+
+    def close_map(self) -> TypeResult:
         """
         close the type constraint term
         - use recursive type to handle the case of circular reference
         """
-        raise NotImplementedError
-
-    def get_type(self, expr: Expr) -> Type:
-
-        def detect_cyclic_reference(t: Type) -> bool:
-            return False
-
-        def find(t: Type) -> Type:
+        def close(t: Type) -> Type:
             """
             find the representative of the set that this type belongs to
             - it should handle the case circular reference
@@ -55,17 +56,21 @@ class TypeConstraitCollection(AstVisitor):
             t = t.find_parent()
             match t:
                 case PointerType(inner):
-                    return PointerType(find(inner))
+                    return PointerType(close(inner))
                 case FunctionType(params, return_type):
-                    params = [find(param) for param in params]
-                    return_type = find(return_type)
+                    params = [close(param) for param in params]
+                    return_type = close(return_type)
                     return FunctionType(params, return_type)
                 case _:
                     return t
-        type_ = find(self._map2type.get(id(expr)))
-        return type_
+
+        for (id, type_) in self._map2type.items():
+            self.map2type[id] = close(type_)
+
+        return TypeResult(self.map2expr, self.map2type)
 
     # @typecheck
+
     def _get_typevar(self, expr: Expr | Function) -> TypeVar:
         """
         assign a new type variable to expr and return it
@@ -83,7 +88,7 @@ class TypeConstraitCollection(AstVisitor):
         return typevar
 
     def _add(self, constraint: Constraint):
-        self._constraints.append(constraint)
+        self.constraints.append(constraint)
 
     def visit_input(self, node: Input):
         tv = self._get_typevar(node)
@@ -172,7 +177,7 @@ class TypeConstraitCollection(AstVisitor):
         tv_expr = self._get_typevar(node.expr)
         self._add(Equal(tv, PointerType(tv_expr)))
         node.expr.accept(self)
-    
+
     def visit_reference(self, node: Reference):
         """
         &E: [[&E]] = ↑[[E]]
@@ -204,11 +209,11 @@ class TypeConstraitCollection(AstVisitor):
         match node.op:
             case Operator.EQ:
                 self._add(Equal(tv_left, tv_right))
-                self._add(Equal(tv_left, IntType()))
                 self._add(Equal(tv_node, IntType()))
             case _:
                 self._add(Equal(tv_node, IntType()))
                 self._add(Equal(tv_left, IntType()))
+                self._add(Equal(tv_right, IntType()))
         node.left.accept(self)
         node.right.accept(self)
 
@@ -217,8 +222,9 @@ class TypeAnalysis(Analysis):
 
     @classmethod
     def run(cls, source: Program):
+        # collect constraints
         tcc = TypeConstraitCollection.collect(source)
-        constraints = tcc._constraints
-        UnionFindSolver.solve(constraints)
-        tcc.close()
-        return tcc
+        # solve constraints
+        UnionFindSolver.solve(tcc.constraints)
+        # build type map
+        return tcc.close_map()

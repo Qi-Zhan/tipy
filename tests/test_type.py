@@ -1,10 +1,10 @@
 import unittest
 
-from tipy.parser import parse_file, parse
+from tipy.parser import parse
 from tipy.analysis import TypeAnalysis
-from tipy.util import TypeError
 from tipy.ast import Id
 from tipy.type import *
+from tipy.util import TypeError
 
 from .util import TipyTest
 
@@ -37,6 +37,19 @@ class TestType(TipyTest):
                     case 'short':
                         type_ = FunctionType([], IntType())
                         self.assertEqual(result.get_type(expr), type_)
+
+    def test_error(self):
+        prog = """
+        main() {
+            var x, y;
+            x = input;
+            y = alloc x;
+            x = x + y;
+            return 0;
+        }
+        """
+        prog = parse(prog)
+        self.assertException(TypeAnalysis.run, TypeError, prog)
 
     def test_general(self):
         prog = """
