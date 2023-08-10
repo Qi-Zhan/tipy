@@ -3,23 +3,6 @@ from ..util import TypeError
 from ..type import *
 
 
-def make_set(x: Type):
-    """
-    adds a new node x that is its own parent
-    >>> x = TypeVar.new()
-    >>> make_set(x)
-    >>> assert x.parent == x
-    """
-    x.parent = x
-    match x:
-        case PointerType(inner):
-            make_set(inner)
-        case FunctionType(params, return_type):
-            for param in params:
-                make_set(param)
-            make_set(return_type)
-
-
 def find(x: Type) -> Type:
     """
     returns the representative of the set that x belongs to
@@ -51,16 +34,12 @@ def unify(x: Type, y: Type) -> None | TypeError:
         return
     # unify procedure
     match x_root, y_root:
-        case TypeVar(_), TypeVar(_):
+        case TypeVar(_), TypeVar(_) | IntType(), IntType() | StringType(), StringType():
             union(x_root, y_root)
         case TypeVar(_), _:
             union(x_root, y_root)
         case _, TypeVar(_):
             union(y_root, x_root)
-        case IntType(), IntType():
-            union(x_root, y_root)
-        case StringType(), StringType():
-            union(x_root, y_root)
         case PointerType(x_type), PointerType(y_type):
             unify(x_type, y_type)
             union(x_root, y_root)
@@ -79,9 +58,6 @@ class UnionFindSolver(Solver):
     @classmethod
     def solve(cls, constraints):
         # initialize the union-find data structure
-        for constraint in constraints:
-            make_set(constraint.left)
-            make_set(constraint.right)
         # unify all the constraints
         for constraint in constraints:
             unify(constraint.left, constraint.right)

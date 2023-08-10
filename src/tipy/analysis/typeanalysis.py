@@ -6,6 +6,10 @@ from ..symbol import SymbolTable
 from ..visitor import AstVisitor
 from ..solver import UnionFindSolver
 from ..type import *
+from ..log import get_logger
+
+Logger = get_logger(__name__)
+Logger.setLevel('DEBUG')
 
 
 @dataclass
@@ -45,27 +49,55 @@ class TypeConstraitCollection(AstVisitor):
 
     def close_map(self) -> TypeResult:
         """
-        close the type constraint term
+        close the type constraint term, return the final type map
         - use recursive type to handle the case of circular reference
         """
-        def close(t: Type) -> Type:
+        def close(t: Type, typevar: TypeVar = None) -> Type:
             """
-            find the representative of the set that this type belongs to
-            - it should handle the case circular reference
+            close the type constraint term, find the final result of t
+            - t: the type to be closed
+            - typevar: the type variable that t should ignore, it is used to handle the case of circular reference
             """
+
+            # t is in recursive type, do not try to close it
+            if typevar is not None and isinstance(typevar, TypeVar) and t == typevar:
+                return t
+
+            origin = t
             t = t.find_parent()
+            # circular reference
+            if t.contain(origin):
+                Logger.debug(f'circular reference: {origin} -> {t}')
+                match origin:  # 1 -> pointer(1)
+                    case TypeVar(_):
+                        # create a new type variable
+                        t = RecursionType(origin, t)
+                        # origin = t
+                    case _:
+                        print('circular reference not handled')
+                        breakpoint()
+
             match t:
                 case PointerType(inner):
-                    return PointerType(close(inner))
+                    return PointerType(close(inner, typevar))
                 case FunctionType(params, return_type):
-                    params = [close(param) for param in params]
+                    params = [close(param, typevar) for param in params]
                     return_type = close(return_type)
                     return FunctionType(params, return_type)
+                case RecursionType(var, type_):
+                    return RecursionType(var, close(type_, var))
                 case _:
                     return t
 
         for (id, type_) in self._map2type.items():
-            self.map2type[id] = close(type_)
+            result = close(type_)
+            # if type contains recursive type, replace it with the recursive type
+            # **IMPORTANT: I don't if this is correct**
+            recursive = result.contain_class(RecursionType)
+            if recursive is not None:
+                self.map2type[id] = recursive
+            else:
+                self.map2type[id] = result
 
         return TypeResult(self.map2expr, self.map2type)
 
@@ -166,6 +198,7 @@ class TypeConstraitCollection(AstVisitor):
         typ = FunctionType(tv_args, tv_expr)
         tv_name = self._get_typevar(node.name)
         self._add(Equal(tv_name, typ))
+        node.name.accept(self) # important:
         for arg in node.args:
             arg.accept(self)
 

@@ -85,9 +85,8 @@ class TestType(TipyTest):
         }
         """
         prog = parse(prog)
-        result = TypeAnalysis.run(prog)
-        for expr in result.map2expr.values():
-            print(expr)
+        # success if no max recursion depth exceeded
+        TypeAnalysis.run(prog)
 
     def test_hard(self):
         prog = """
@@ -112,7 +111,18 @@ class TestType(TipyTest):
         prog = parse(prog)
         result = TypeAnalysis.run(prog)
         for expr in result.map2expr.values():
-            pass
+            if isinstance(expr, Id):
+                match expr.value:
+                    case 'p' | 'q':
+                        self.assertEqual(
+                            result.get_type(expr), PointerType(IntType()))
+                    case 'x':
+                        x = result.get_type(expr)
+                        self.assertIsInstance(x, RecursionType)
+                        self.assertIsInstance(x.type_, FunctionType)
+                    case 'foo':
+                        foo = result.get_type(expr)
+        self.assertEqual(foo, x)
 
 
 if __name__ == '__main__':

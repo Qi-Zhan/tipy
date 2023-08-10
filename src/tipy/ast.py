@@ -80,7 +80,7 @@ class Id(Expr):
         return id(self)
 
     def __str__(self) -> str:
-        return f"{self.value}{self.token.line}"
+        return f"{self.value}"
 
 
 @dataclass
@@ -453,7 +453,7 @@ class Call(Expr):
         visitor.visit_call(self)
 
     def dump(self, indent=0):
-        print(' ' * indent, 'call', end=' ')
+        print(' ' * indent, end=' ')
         self.name.dump()
         print('(', end=' ')
         for arg in self.args:

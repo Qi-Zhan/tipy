@@ -66,6 +66,10 @@ class SymbolTable(AstVisitor):
     def __init__(self):
         self.symbols = {}
         self.context = SymbolContext()
+    
+    def show(self):
+        for name, id in self.symbols.items():
+            print(f"{name.value} line{name.token.line} -> line{id.token.line}")
 
     @classmethod
     def build(cls, ast: Program) -> "SymbolTable":
