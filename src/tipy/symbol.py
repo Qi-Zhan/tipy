@@ -1,4 +1,3 @@
-from tipy.ast import Access, Assign, Parameters, Program, Record
 from .ast import *
 from .visitor import AstVisitor
 from .util import SymbolError
@@ -38,8 +37,6 @@ class SymbolContext:
 
     def exit_scope(self) -> None:
         for v in self.symbols.values():
-            if len(v) == 0:
-                continue
             while v[-1] is not SpecialSymbol:
                 v.pop()
             if v[-1] is SpecialSymbol:
@@ -96,6 +93,12 @@ class SymbolTable(AstVisitor):
 
     def visit_access(self, node: Access):
         node.name.accept(self)
+    
+    def visit_direct_field_write(self, node: DirectFieldWrite):
+        node.name.accept(self)
+    
+    def visit_indirect_field_write(self, node: IndirectFieldWrite):
+        node.expr.accept(self)
 
     def visit_parameters(self, node: Parameters):
         for param in node.params:
@@ -114,7 +117,7 @@ class SymbolTable(AstVisitor):
         self.context.exit_scope()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     import doctest
     doctest.testmod()
     print('OK')

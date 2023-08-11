@@ -43,6 +43,7 @@ def typecheck(func: callable):
         return func(*args, **kwargs)
     return wrapper
 
+
 def get_output(func, *args, **kwargs) -> str:
     """
     Run the function and return the output
@@ -54,4 +55,3 @@ def get_output(func, *args, **kwargs) -> str:
     func(*args, **kwargs)
     sys.stdout = old_stdout
     return mystdout.getvalue()
-                

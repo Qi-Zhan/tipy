@@ -67,7 +67,7 @@ class PointerType(Type):
     def contain(self, t: Type) -> bool:
         return self.type_.contain(t) or self.type_ == t
 
-    def contain_class(self, t) -> bool:
+    def contain_class(self, t) -> bool: # pragma: no cover
         if self.type_.contain_class(t):
             return self.type_.contain_class(t)
         if isinstance(self.type_, t):
@@ -97,7 +97,7 @@ class FunctionType(Type):
                 return True
         return self.return_type.contain(t) or self.return_type == t
 
-    def contain_class(self, c):
+    def contain_class(self, c): # pragma: no cover
         for param in self.params:
             if param.contain_class(c):
                 return param.contain_class(c)

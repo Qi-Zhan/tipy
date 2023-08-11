@@ -23,18 +23,15 @@ def union(x: Type, y: Type):
 
 
 def unify(x: Type, y: Type) -> None | TypeError:
-    """
-    unify two types
-    """
-    assert isinstance(x, Type)
-    assert isinstance(y, Type)
+    """ unify two types """
+
     x_root = find(x)
     y_root = find(y)
     if x_root == y_root:
         return
     # unify procedure
     match x_root, y_root:
-        case TypeVar(_), TypeVar(_) | IntType(), IntType() | StringType(), StringType():
+        case TypeVar(_), TypeVar(_):
             union(x_root, y_root)
         case TypeVar(_), _:
             union(x_root, y_root)
@@ -63,9 +60,3 @@ class UnionFindSolver(Solver):
             unify(constraint.left, constraint.right)
 
         return find
-
-
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
-    print('Ok')

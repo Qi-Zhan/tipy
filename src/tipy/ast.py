@@ -5,8 +5,8 @@ from lark import ast_utils, Token
 
 
 class _Ast(ast_utils.Ast):
-    def accept(self, _visitor):
-        raise NotImplementedError(
+    def accept(self, _visitor): 
+        raise NotImplementedError( # pragma: no cover
             'you should implement this method in subclass')
 
 
@@ -225,10 +225,8 @@ class Access(Expr):
         match ids:
             case tuple(_):
                 self.fields = list(ids)
-            case Id(_):
-                self.fields = [ids]
             case _: # pragma: no cover
-                raise TypeError('Invalid type for field', type(ids))
+                raise TypeError('Invalid type for field, want tuple', type(ids))
 
     def dump(self, indent=0):
         assert (type(self.name) in (Id, Deref, Expr)
@@ -282,8 +280,6 @@ class Vardecl(Statement):
         match name:
             case Parameters(names):
                 self.ids = names
-            case Id(_):
-                self.ids = [name]
             case _: # pragma: no cover
                 raise TypeError('Invalid type for name', type(name))
 
@@ -401,15 +397,17 @@ class Assign(Statement):
         match self.name:
             case Id(name):
                 print(' ' * indent, name, '=', end=' ')
-            case DirectFieldWrite(id, field):
-                print(' ' * indent, id.value, '.', field.value, '=', end=' ')
-            case IndirectFieldWrite(expr, field):
-                print(' ' * indent, '*', end=' ')
-                expr.dump()
-                print('.', field.value, '=', end=' ')
-            case DerefWrite(expr):
-                print(' ' * indent, '*', end=' ')
-                expr.dump()
+            case DirectFieldWrite(_, _) as dfw:
+                print(' ' * indent, end='')
+                dfw.dump()
+                print('=', end=' ')
+            case IndirectFieldWrite(_, _) as ifw:
+                print(' ' * indent, end='')
+                ifw.dump()
+                print('=', end=' ')
+            case DerefWrite(_) as dw:
+                print(' ' * indent, '*', end='')
+                dw.dump()
                 print('=', end=' ')
             case _: # pragma: no cover
                 print(type(self.name))

@@ -9,7 +9,7 @@ from ..type import *
 from ..log import get_logger
 
 Logger = get_logger(__name__)
-Logger.setLevel('DEBUG')
+Logger.setLevel('INFO')
 
 
 @dataclass

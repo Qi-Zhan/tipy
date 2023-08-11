@@ -1,0 +1,7 @@
+main() {
+    var a;
+    a = {};
+    a.b = a.b;
+    (* main()).b = a;
+    return 0;
+}

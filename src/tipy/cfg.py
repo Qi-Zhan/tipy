@@ -9,12 +9,12 @@ class Node:
     def __init__(self, value: Statement | Expr):
         self.value = value
 
-    def pred(self) -> list["Node"]:
+    def pred_nodes(self) -> list["Node"]:
         for edge in self.graph.edges:
             if edge.out == self:
                 yield edge.in_
 
-    def succ(self) -> list["Node"]:
+    def succ_nodes(self) -> list["Node"]:
         for edge in self.graph.edges:
             if edge.in_ == self:
                 yield edge.out
@@ -32,16 +32,17 @@ class Node:
     def __str__(self) -> str:
         return get_output(self.value.dump)
 
+
 class Nope(Node):
     """ A node that does nothing """
+
     def __init__(self):
         pass
 
-    def __str__(self) -> str:
-        return ""
 
 class Condition(Node):
     """ A conditional node """
+
     cond: Expr
 
     def __init__(self, cond: Expr):
@@ -200,7 +201,7 @@ class Graph:
                 return node
 
     def add_node(self, node: Node) -> None:
-        if node in self.nodes:
+        if node in self.nodes:  # pragma: no cover
             print(f'Warning: node {node} already in graph')
         self.nodes.append(node)
         node.graph = self
@@ -220,30 +221,31 @@ class Graph:
         else:
             edge = FalseEdge(in_, out)
 
-        if edge in self.edges:
+        if edge in self.edges:  # pragma: no cover
             print(f'Warning: edge {edge} already in graph')
         self.edges.append(edge)
         edge.graph = self
 
     def eliminate_nope(self) -> None:
-        remove_nodes = []
-        remove_edges = []
         for node in self.nodes:
             if isinstance(node, Nope):
+                remove_nodes = []
+                remove_edges = []
                 remove_nodes.append(node)
+                # for each pred edge, add an edge from pred to each succ
                 for edge in node.pred_edges():
                     remove_edges.append(edge)
                     for succ_edge in node.succ_edges():
                         remove_edges.append(succ_edge)
                         self.add_edge(edge.in_, succ_edge.out)
-        for node in remove_nodes:
-            if node in self.nodes:
-                self.nodes.remove(node)
-        for edge in remove_edges:
-            if edge in self.edges:
-                self.edges.remove(edge)
+                for node in remove_nodes:
+                    if node in self.nodes:
+                        self.nodes.remove(node)
+                for edge in remove_edges:
+                    if edge in self.edges:
+                        self.edges.remove(edge)
 
-    def visualize(self, filename: str = 'cfg'):
+    def visualize(self, filename: str = 'cfg'):  # pragma: no cover
         import graphviz
         dot = graphviz.Digraph()
         for node in self.nodes:
@@ -251,6 +253,3 @@ class Graph:
         for edge in self.edges:
             dot.edge(str(id(edge.in_)), str(id(edge.out)), label=str(edge))
         dot.render(filename, view=True)
-
-    def __repr__(self) -> str:
-        return f'Graph({self.nodes}, {self.edges})'

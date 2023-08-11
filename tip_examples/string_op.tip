@@ -1,0 +1,11 @@
+main () {
+    var a, b, c;
+    a = "Hello";
+    output a;
+    c = b >= c;
+    c = b <= c;
+    c = b > c;
+    c = b < c;
+    c = b != c;
+    return 0;
+}

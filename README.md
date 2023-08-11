@@ -2,7 +2,7 @@
 
 This is python implementation for [TIP](https://github.com/cs-au-dk/TIP), which aims to teach the art of static analysis.
 
-`tip_examples/` contains some examples of TIP programs, they are all from the original [TIP](https://github.com/cs-au-dk/TIP) repository.
+`tip_examples/` contains some examples of TIP programs, they are mostly from the original [TIP](https://github.com/cs-au-dk/TIP) repository. `field_write.tip`, `string_op.tip` are added by us.
 
 ## Install
 
@@ -29,7 +29,7 @@ See `examples/` for all analysis we implemented of TIP program.
 make test
 ```
 
-For coverage report, run `make coverage`. It is recommended to 
+For coverage report, run `make coverage`. It is recommended to use `Coverage Gutters` in VSCode to visualize coverage report.
 
 ```bash
 pip install coverage # install coverage
