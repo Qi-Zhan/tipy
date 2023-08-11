@@ -72,8 +72,7 @@ class TypeConstraitCollection(AstVisitor):
                     case TypeVar(_):
                         # create a new type variable
                         t = RecursionType(origin, t)
-                        # origin = t
-                    case _:
+                    case _: # pragma: no cover
                         print('circular reference not handled')
                         breakpoint()
 
@@ -110,7 +109,7 @@ class TypeConstraitCollection(AstVisitor):
         if isinstance(expr, Function):
             expr = expr.name
         elif not isinstance(expr, Expr):
-            assert False, f'expr must be an instance of Expr, got {expr}'
+            assert False, f'expr must be an instance of Expr, got {expr}' # pragma: no cover
         expr_id = id(expr)
         if expr_id in self._map2type:
             return self._map2type[expr_id]
@@ -141,7 +140,7 @@ class TypeConstraitCollection(AstVisitor):
             case AstType.NULL:
                 self._add(
                     Equal(tv, PointerType(TypeVar.new())))
-            case _:
+            case _: # pragma: no cover
                 raise TypeError(f'Unknown type {node.type_}')
 
     def visit_assign(self, node: Assign):

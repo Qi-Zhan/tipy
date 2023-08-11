@@ -28,3 +28,10 @@ See `examples/` for all analysis we implemented of TIP program.
 ```bash
 make test
 ```
+
+For coverage report, run `make coverage`. It is recommended to 
+
+```bash
+pip install coverage # install coverage
+make coverage
+```

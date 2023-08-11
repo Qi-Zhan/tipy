@@ -35,13 +35,13 @@ class AstType(enum.Enum):
 
 class Statement(_Ast):
     def accept(self, _visitor):
-        raise NotImplementedError(
+        raise NotImplementedError( # pragma: no cover
             'you should implement this method in subclass')
 
 @dataclass
 class Expr(_Ast):
     def accept(self, _visitor):
-        raise NotImplementedError(
+        raise NotImplementedError( # pragma: no cover
             'you should implement this method in subclass')
 
 
@@ -227,7 +227,7 @@ class Access(Expr):
                 self.fields = list(ids)
             case Id(_):
                 self.fields = [ids]
-            case _:
+            case _: # pragma: no cover
                 raise TypeError('Invalid type for field', type(ids))
 
     def dump(self, indent=0):
@@ -241,7 +241,7 @@ class Access(Expr):
             case Deref(expr):
                 print(' ' * indent, '*', end=' ')
                 expr.dump()
-            case _:
+            case _: # pragma: no cover
                 self.name.dump()
         for field in self.fields:
             print('.', field.value, end=' ')
@@ -284,7 +284,7 @@ class Vardecl(Statement):
                 self.ids = names
             case Id(_):
                 self.ids = [name]
-            case _:
+            case _: # pragma: no cover
                 raise TypeError('Invalid type for name', type(name))
 
 
@@ -411,7 +411,7 @@ class Assign(Statement):
                 print(' ' * indent, '*', end=' ')
                 expr.dump()
                 print('=', end=' ')
-            case _:
+            case _: # pragma: no cover
                 print(type(self.name))
                 print(self.name.__match_args__)
                 print(' ' * indent, '???', end=' ')
